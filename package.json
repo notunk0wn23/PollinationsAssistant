@@ -1,0 +1,15 @@
+{
+  "name": "pollinationsassistant",
+  "version": "1.0.0",
+  "description": "Ai assistant using pollinations.ai",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "spacedouut",
+  "license": "MIT",
+  "dependencies": {
+    "marked": "^15.0.4",
+    "moment": "^2.30.1"
+  }
+}

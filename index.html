@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat UI</title>
+  <link rel="stylesheet" href="src/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <h3>Chats</h3>
+      <button class="new-chat-button">Start New Chat</button>
+      <ul class="chat-list">
+        <!-- Chat list will be dynamically populated -->
+      </ul>
+    </div>
+    <div class="chat-window">
+      <div class="messages-list">
+        <!-- Messages will be dynamically updated here -->
+      </div>
+      <div class="send-message-container">
+        <input type="text" id="message-box" placeholder="Type a message...">
+        <button id="send-button"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+  <script src="src/index.js" type="module"></script>
+</body>
+</html>
