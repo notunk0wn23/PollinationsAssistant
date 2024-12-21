@@ -15,12 +15,15 @@
 <body>
   <div class="app">
     <div class="sidebar">
-      <h3 class="greeting"></h3>
+      <div class="sidebar-overlay">
+        <h3 class="greeting"></h3>
+      </div>
       <button class="new-chat-button">Start New Chat</button>
       <ul class="chat-list">
         <!-- Chat list will be dynamically populated -->
       </ul>
     </div>
+    <button id="toggleSidebar"><i class="fa fa-bars" aria-hidden="true"></i></button>
     <div class="chat-window">
       <div class="messages-list">
         <!-- Messages will be dynamically updated here -->
