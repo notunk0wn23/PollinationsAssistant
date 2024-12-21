@@ -135,7 +135,7 @@ export class AIManager {
                         this.callbacks.chatEdit();
                         return {
                             previous: previousName,
-                            result: params.name
+                            result: this.chatData.active.name 
                         }
                     }
                 ),
@@ -252,7 +252,8 @@ export class AIManager {
         const id = crypto.randomUUID();
         const messages = this.chatData.active.messages;
         this.chatData.history.push(new Chat(id, messages));
-        this.chatData.active = new Chat(null, []);
+        this.chatData.active = this.chatData.history[this.chatData.history.length - 1];
+        //this.chatData.active = new Chat(null, []);
 
         if (this.callbacks.chatSave) this.callbacks.chatSave();
     }
