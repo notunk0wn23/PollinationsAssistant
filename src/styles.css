@@ -7,7 +7,7 @@
 body,
 html {
     height: 100%;
-    font-family: Arial, sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     background: #1c1c1c
 }
 
@@ -24,7 +24,7 @@ html {
     margin: 25px;
     border-radius: 25px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-
+    min-width: 300px;
 }
 
 .sidebar h3 {
@@ -74,31 +74,32 @@ html {
 }
 
 .messages-list {
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
+    overflow-y: scroll;
     padding: 20px;
-    overflow-y: auto;
+    margin: 5px;
 }
 
 .message {
-    background-color: #fff;
-    border-radius: 5px;
     margin-bottom: 10px;
-    padding: 10px;
-    max-width: 80%;
+    color: white;
+    padding: 15px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    max-width: 70%;
 }
 
-.message.user {
-    background-color: #3498db;
-    color: white;
+.user {
+    background-color: #3c3c3c;
     align-self: flex-end;
-    /* This keeps user messages on the right */
 }
 
-.message.ai {
-    background-color: #2ecc71;
-    color: white;
+.ai {
+    background-color: #2c2c2c;
     align-self: flex-start;
-    /* This keeps AI messages on the left */
 }
 
 input[type="text"] {
@@ -131,5 +132,5 @@ input[type="text"]:focus {
     align-items: center;
     margin: 10px;
     gap: 10px;
-    margin-botton: 15px;
+    margin-bottom: 15px;
 }
