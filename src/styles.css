@@ -134,3 +134,11 @@ input[type="text"]:focus {
     gap: 10px;
     margin-bottom: 15px;
 }
+
+.typing {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
