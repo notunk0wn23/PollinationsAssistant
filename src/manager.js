@@ -45,8 +45,8 @@ export class AIManager {
         this.config = {
             seed: 0,
             prompts: {
-                base: 'You are a helpful AI assistant. Respond in JSON format using a JSON object containing a \'content\' key, containing your message.',
-                actions: "You may perform various actions by adding content to your JSON object. When you are requested to perform actions, you must structure your response by including a key called 'content,' which should contain a brief message or explanation of the action being performed for the user. Additionally, you must include a key called 'actions,' which will hold an array of action objects. Even if only one action is being performed, the 'actions' key should contain an array. Each action object will have two keys: 'name,' which specifies the type of action being performed (such as 'math,' 'fetchData,' or 'sortList'), and 'parameters,' which holds the necessary details or inputs for the action (such as an equation for 'math,' a URL for 'fetchData,' or a list for 'sortList'). If multiple actions are to be performed, additional action objects should be added to the 'actions' array. This approach allows for clear specification of the actions being taken and the associated parameters required for each action. If an action is not included in your avalible actions, it is not useable. Do not attempt to use it. Unless an action has a high chance of taking an extensive amount of time, you are to omit the 'content' key when you run an action. Once you have recived the output of the action, you may then reinclude the content key and say something."
+                "base": "You are an AI assistant. Your task is to respond to user inquiries with helpful & insightful answers. Respond in JSON with a key named 'content'. Regardless of circumstances, always respond in JSON. By default, use a casual although informative tone, aiming to make interactions feel natural. If you are unable to give a confident answer to a query, do not attempt to make a educated or non educated guess. Your task in this situation is to explain why you are unable to respond with a confident and/or correct answer to the user's query.",
+                "actions": "You may perform extended functionality through actions. You may perform an action by expanding upon your existing JSON format. Within your JSON format, create a new key named 'actions'. The contents should be an array with a JSON object containing the action you wish to execute. Each item within the array should be a JSON object containing two keys: name, which should be the precise name of the action as listed within the action format object, and parameters, which contains a JSON object with action parameters as listed in the format. The third key withing each action is called 'flags'. It allows you to tell the action handler to perform extra tasks when you run an action. The only tag you may use is 'sendNextMessage', will trigger you to create a new chat message after the action is finished triggering. Optionally, when performing actions, you can omit the 'content' key to run an action before responding for a more natural user experience. When performing this, include the 'sendNextMessage' flag."
             },
             models: {
                 current: 'openai',
@@ -100,13 +100,14 @@ export class AIManager {
                     'math',
                     JSON.stringify({
                         name: 'math',
-                        description: 'Perform mathematical operations. Format as you would in javascript. Use for complex math operations, like 1251*35232',
-                        requestParameters: {
-                            equation: 'Javascript formatted math operation. Based off of the eval() function.'
+                        description: 'Perform mathematical operations using the javascript evaluation function. Equations must be formatted as they would be in javascript.',
+                        parameters: {
+                            equation: {
+                                type: 'string',
+                                description: 'The equation to evaluate.'
+                            }
                         },
-                        responseParameters: {
-                            result: 'The result of the math operation.'
-                        }
+                        required: ["equation"]
                     }),
                     (params) => {
                         console.log("Math action: new request for evaluate: " + params.equation)
@@ -120,13 +121,13 @@ export class AIManager {
                     JSON.stringify({
                         name: 'setChatName',
                         description: 'Set the name of the chat. Ensure that the name summarizes the content of the chat in a few words. When the user sends their initial message, name the chat after you respond.',
-                        requestParameters: {
-                            name: 'The name of the chat.'
+                        parameters: {
+                            name: {
+                                type: 'string',
+                                description: 'The name of the chat.'
+                            }
                         },
-                        responseParameters: {
-                            previous: 'The previous name of the chat.',
-                            result: 'The newname of the chat.'
-                        }
+                        required: ['name']
                     }),
                     (params) => {
                         const previousName = this.chatData.active.name;
@@ -144,9 +145,8 @@ export class AIManager {
                     JSON.stringify({
                         name: 'timedate',
                         description: 'Get the current time and date. Unless the user specifies that they want both, only show the one they ask for. Only show seconds when requested.',
-                        requestParameters: {},
-                        responseParameters: {
-                            result: 'The current time and date.'
+                        parameters: {
+                            required: []
                         }
                     }),
                     (params) => {
@@ -165,12 +165,13 @@ export class AIManager {
             JSON.stringify({
                 name: 'getInfo',
                 description: 'Get information about yourself, the chat, and more. If a user requests info about you, such as your model or the model list or what actions you may run, you will use this action to get data about the requested information, and respond based off of the information given to you.',
-                requestParameters: {
-                    info: "The information you want to get. This can be: model - the model that you are running on, refer to models list for all possible models. chatHistory - list of previous chats and their names. seed - the random UUID value used to randomize your responses. actions - all possible actions you can perform. models - all possible models you can use.",
+                parameters: {
+                    info: {
+                        type: 'string',
+                        description: 'The information you want to get. This can be: model - the model that you are running on, refer to models list for all possible models. chatHistory - list of previous chats and their names. seed - the random UUID value used to randomize your responses. actions - all possible actions you can perform. models - all possible models you can use.',
+                    },
+                    required: ['info']
                 },
-                responseParameters: {
-                    result: 'The information about the chat.'
-                }
             }),
             (params) => {
                 switch (params.info) {
@@ -206,12 +207,12 @@ export class AIManager {
             JSON.stringify({
                 name: 'setModel',
                 description: 'Set the model of the chat.',
-                requestParameters: {
-                    model: `The model of the chat. Must be one of the following: ${JSON.stringify(this.config.models.list)}`
-                },
-                responseParameters: {
-                    previous: 'The previous model of the chat.',
-                    result: 'The new model of the chat.'
+                parameters: {
+                    model: {
+                        type: 'string',
+                        description: 'The model to set the chat to. Use getInfo to request the models you may switch to before using this.'
+                    },
+                    required: ['model']
                 }
             }),
             (params) => {
@@ -272,19 +273,21 @@ export class AIManager {
         this.saveChat();
         this.chatData.active = new Chat(null, []);
         const possibleActions = Object.values(this.config.actions).map(action => action.format).join('\n');
-        this.chatData.active.basePrompt = this.config.prompts.base + this.config.prompts.actions + 'Here is the format for each currently availible action: ' + possibleActions;
+        this.chatData.active.basePrompt = this.config.prompts.base + this.config.prompts.actions + ' The following will contain raw JSON information which shall be used by you to format action requests and read reponses. requestFormat lists data needed to be added to your ' + possibleActions;
         this.chatData.active.initialize();
 
         if (this.callbacks.chatLoad) this.callbacks.chatLoad();
     }
 
-    sendMessage(role, content) {
+    sendMessage(role, content, messageTags) {
+        // Message tags are a way to specify if something specific happened when a message happened, such as an action.
         const uuid = crypto.randomUUID();
         const message = {
             uuid,
             role,
             content,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            tags: messageTags
         }
         this.chatData.active.messages.push(message);
 
@@ -305,7 +308,7 @@ export class AIManager {
                 messages: this.chatData.active.messages,
                 seed: this.config.seed,
                 model: this.config.models.current,
-                jsonMode: true
+                jsonMode: false
             })
         });
 
@@ -328,8 +331,19 @@ export class AIManager {
                         }));
                     }
                 });
-                this.getAIResponse();
             }
+        }
+
+        if (message.tags) {
+            message.tags.forEach(tag => {
+                switch (tag) {
+                    case 'sendNextMessage':
+                        this.getAIResponse();
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
 
         if (this.callbacks.postResponse) this.callbacks.postResponse();
