@@ -107,6 +107,12 @@ document.querySelector('#send-button').addEventListener('click', () => {
 });
 
 
+document.querySelector('#toggleSidebar').addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('open');
+    console.log("sidebar toggled")
+});
+
 
 // Welcome message at the top
 const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : new Date().getHours() < 22 ? 'evening' : 'night';
