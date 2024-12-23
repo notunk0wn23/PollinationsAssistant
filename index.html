@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,21 +8,39 @@
   <link rel="stylesheet" href="src/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
   <link rel="manifest" href="public/manifest.json">
   <link rel="icon" href="public/icon.png" type="image/png" sizes="96x96">
 </head>
+
 <body>
   <div class="app">
-    <div class="sidebar">
-      <div class="sidebar-overlay">
-        <h3 class="greeting"></h3>
+    <div class="sidebar-container">
+      <div class="sidebar">
+        <div class="sidebar-greeting">
+          <h3 class="greeting-text"></h3>
+          <div class="sidebar-greeting-buttons">
+            <button class="sidebar-greeting-button" id="newChat">New Chat</button>
+            <button class="sidebar-greeting-button" id="newFlow">New Flow</button> 
+          </div>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="chatContainer">
+          <span class="sidebar-chat-section" id="sidebarFlows">Flows</span>
+          <ul class="conversation-list" id="flow-list">
+            <!-- Chat list will be dynamically updated here -->
+          </ul>
+          <span class="sidebar-chat-section" id="sidebarChats">Chats</span>
+          <ul class="conversation-list" id="chat-list">
+            <!-- Chat list will be dynamically updated here -->
+          </ul>
+        </div>
       </div>
-      <button class="new-chat-button">Start New Chat</button>
-      <ul class="chat-list">
-        <!-- Chat list will be dynamically populated -->
-      </ul>
     </div>
     <div class="chat-window">
       <button id="toggleSidebar"><i class="fa fa-bars" aria-hidden="true"></i></button>
@@ -36,4 +55,5 @@
   </div>
   <script src="src/index.js" type="module"></script>
 </body>
+
 </html>

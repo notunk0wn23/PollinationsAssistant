@@ -2,12 +2,16 @@
 
 import { AIManager } from './manager.js';
 
+import { Marked } from 'marked';
+import moment from 'moment';
+
+const api = 
 
 const ai = new AIManager('https://text.pollinations.ai/openai');
 
 ai.newChat();
 
-const chatList = document.querySelector('.chat-list');
+const chatList = document.querySelector('#chat-list.conversation-list');
 const messagesList = document.querySelector('.messages-list');
 
 function updateChatList() {
@@ -92,7 +96,7 @@ ai.callbacks.chatEdit = () => {
 }
 
 
-document.querySelector('.new-chat-button').addEventListener('click', () => {
+document.querySelector('#newChat.sidebar-greeting-button').addEventListener('click', () => {
     ai.newChat();
     updateChatList();
     updateMessagesList();
@@ -116,23 +120,9 @@ document.querySelector('#toggleSidebar').addEventListener('click', () => {
 
 // Welcome message at the top
 const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : new Date().getHours() < 22 ? 'evening' : 'night';
-const messages = [
-    "Howdy.",
-    "Heya!",
-    "How's it going?",
-    "What's up?",
-    "Welcome.",
-    `Good ${timeOfDay}!`,
-    "Hello!",
-    "Hi!",
-    "Hello there!",
-    "Hiya!"
-]
-
-const message = messages[Math.floor(Math.random() * messages.length)];
-const welcomeMessage = document.getElementsByClassName('greeting')[0];
-welcomeMessage.textContent = message;
+const welcomeMessage = document.getElementsByClassName('greeting-text')[0];
+welcomeMessage.textContent = `Good ${timeOfDay}.`;
 
 
-
+// Expose AI for debug purposes
 window.ai = ai

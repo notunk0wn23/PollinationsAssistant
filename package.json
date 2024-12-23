@@ -4,12 +4,17 @@
   "description": "Ai assistant using pollinations.ai",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "author": "spacedouut",
   "license": "MIT",
   "dependencies": {
     "marked": "^15.0.4",
     "moment": "^2.30.1"
+  },
+  "devDependencies": {
+    "vite": "^6.0.5"
   }
 }
