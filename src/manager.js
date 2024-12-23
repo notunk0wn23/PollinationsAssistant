@@ -24,7 +24,7 @@ class Chat {
             role: 'system',
             content: this.basePrompt,
             timestamp: Date.now(),
-            id: crypto.randomUUID()
+            uuid: crypto.randomUUID()
         })
     }
 }
