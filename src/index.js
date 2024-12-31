@@ -1,14 +1,15 @@
-// Define a Chat class to manage the chat data
+import { AIManager } from './manager.js'
+import { systemPrompt } from './prompts.js'
+import { timedate, math } from './function_calls.js'
+import { marked } from 'marked'
+import { hf_models } from './models.js'
 
-import { AIManager } from './manager.js';
+const key = import.meta.env.VITE_HUGGINGFACE_API
+const models = hf_models
 
-import { marked, Marked } from 'marked';
-import moment from 'moment';
+const ai = new AIManager('huggingface', key, 'https://api-inference.huggingface.co/', models);
+ai.config.systemPrompt = systemPrompt([timedate, math]);
 
-const api = import.meta.env.VITE_HUGGINGFACE_API;
-
-console.log(api)
-const ai = new AIManager(api);
 
 ai.newChat();
 
@@ -82,7 +83,7 @@ ai.callbacks.preResponse = () => {
 
 ai.callbacks.postResponse = () => {
     const elements = messagesList.getElementsByClassName('typing');
-    while(elements.length > 0){
+    while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
     }
     const actionElement = document.querySelector('.action');

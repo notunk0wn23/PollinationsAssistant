@@ -1,6 +1,7 @@
 const date = new Date();
 
 // Actions should be an Array, FYI.
+
 export const systemPrompt = (function_calls) => {
 	
 	let functions = '';
