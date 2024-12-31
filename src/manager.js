@@ -1,20 +1,14 @@
-class Action {
-    constructor(name, format, func) {
-        this.name = name;
-        this.format = format;
-        this.func = func;
-    }
+import { HfInference } from "@huggingface/inference";
 
-    runAction(parameters) {
-        return this.func(parameters);
-    }
-}
+//import { Action } from "./actions.js";
+import { systemPrompt } from "./prompts.js";
+import { timedate, math } from "./function_calls.js";
 
 class Chat {
     constructor(id, messages) {
         this.id = id;
         this.messages = messages;
-        this.basePrompt = '';
+        this.basePrompt = systemPrompt();
         this.name = "New Chat";
     }
 
@@ -31,10 +25,9 @@ class Chat {
 
 
 export class AIManager {
-    constructor(api) {
+    constructor(key) {
         this.API = {
-            text: api,
-            image: null
+            key: key
         }
 
         // Chat Data
@@ -44,187 +37,66 @@ export class AIManager {
         };
         this.config = {
             seed: 0,
-            prompts: {
-                "base": "You are an AI assistant. Your task is to respond to user inquiries with helpful & insightful answers. Respond in JSON with a key named 'content'. Regardless of circumstances, always respond in JSON. By default, use a casual although informative tone, aiming to make interactions feel natural. If you are unable to give a confident answer to a query, do not attempt to make a educated or non educated guess. Your task in this situation is to explain why you are unable to respond with a confident and/or correct answer to the user's query.",
-                "actions": "You may perform extended functionality through actions. You may perform an action by expanding upon your existing JSON format. Within your JSON format, create a new key named 'actions'. The contents should be an array with a JSON object containing the action you wish to execute. Each item within the array should be a JSON object containing two keys: name, which should be the precise name of the action as listed within the action format object, and parameters, which contains a JSON object with action parameters as listed in the format. The third key withing each action is called 'flags'. It allows you to tell the action handler to perform extra tasks when you run an action. The only tag you may use is 'sendNextMessage', will trigger you to create a new chat message after the action is finished triggering. Optionally, when performing actions, you can omit the 'content' key to run an action before responding for a more natural user experience. When performing this, include the 'sendNextMessage' flag."
-            },
+            temperature: 0.6,
+            maxTokens: 1024,
+            topP: 0.9,
             models: {
-                current: 'openai',
+                current: 'mistralai/Mistral-Nemo-Instruct-2407',
                 list: {
-                    'openai': {
-                        name: 'ChatGPT 4o',
-                        censored: true,
-                        type: 'chat',
-                        description: 'A general conversational AI model from OpenAI.'
+                    'meta-llama/Llama-3.1-70B-Instruct': {
+                        name: 'Llama 3.1 Instruct',
+                        model: 'meta-llama/Llama-3.3-70B-Instruct',
+                        description: 'The Meta Llama 3.3 multilingual large language model (LLM) is an instruction tuned generative model in 70B (text in/text out).'
                     },
-                    'mistral': {
+                    'google/gemma-2-9b-it': {
+                        name: 'Gemma 2',
+                        model: 'google/gemma-2-9b-it',
+                        description: 'Gemma is a family of lightweight, state-of-the-art open models from Google, built from the same research and technology used to create the Gemini models.'
+                    },
+                    'mistralai/Mistral-Nemo-Instruct-2407': {
                         name: 'Mistral NeMo',
-                        censored: false,
-                        type: 'chat',
-                        description: 'A general conversational AI model from the Mistral AI team.'
+                        model: 'mistralai/Mistral-Nemo-Instruct-2407',
+                        description: 'The Mistral-Nemo-Instruct-2407 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-Nemo-Base-2407. Trained jointly by Mistral AI and NVIDIA, it significantly outperforms existing models smaller or similar in size.'
                     },
-                    'mistral-large': {
-                        name: 'Mistral NeMo Large',
-                        censored: false,
-                        type: 'chat',
-                        description: 'A larger version of the Mistral AI model.'
+                    'mistralai/Mistral-7B-Instruct-v0.3': {
+                        name: 'Mistral',
+                        model: 'mistralai/Mistral-7B-Instruct-v0.3',
+                        description: 'The Mistral-7B-v0.3 Large Language Model (LLM) is a Mistral-7B-v0.2 with extended vocabulary.'
                     },
-                    'llama': {
-                        name: 'Meta Llama 3.1',
-                        censored: true,
-                        type: 'completion',
-                        description: 'A completion-based large language model from Meta.'
+                    'Qwen/Qwen2.5-Coder-32B-Instruct': {
+                        name: 'Qwen Coder',
+                        model: 'Qwen/Qwen2.5-Coder-32B-Instruct',
+                        description: 'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen).'
                     },
-                    'searchgpt': {
-                        name: 'ChatGPT 4o',
-                        censored: true,
-                        type: 'chat',
-                        description: 'ChatGPT 4o, with realtime network access natively'
+                    'Qwen/QwQ-32B-Preview': {
+                        name: 'QwQ',
+                        model: 'Qwen/QwQ-32B-Preview',
+                        description: 'QwQ-32B-Preview is an experimental research model developed by the Qwen Team, focused on advancing AI reasoning capabilities.'
                     },
-                    'p1': {
-                        name: 'P1',
-                        censored: false,
-                        type: 'chat',
-                        description: 'An OptiLLM based model made by pollinations.ai'
+                    '01-ai/Yi-1.5-34B-Chat7': {
+                        name: 'Yi 1.5',
+                        model: '01-ai/Yi-1.5-34B-Chat7',
+                        description: 'Yi-1.5 is an upgraded version of Yi. It is continuously pre-trained on Yi with a high-quality corpus of 500B tokens and fine-tuned on 3M diverse fine-tuning samples.'
                     },
-                    'qwen-coder': {
-                        name: 'Qwen Coder 32b Instruct',
-                        censored: true,
-                        type: 'chat',
-                        description: 'An AI built around programming and coding in various languages'
+                    'HuggingFaceH4/zephyr-7b-alpha': {
+                        name: 'Zephyr',
+                        model: 'HuggingFaceH4/zephyr-7b-alpha',
+                        description: 'Zephyr is a series of language models that are trained to act as helpful assistants. Zephyr-7B-α is the first model in the series, and is a fine-tuned version of mistralai/Mistral-7B-v0.1 that was trained on on a mix of publicly available, synthetic datasets using Direct Preference Optimization (DPO). '
+                    },
+                    'NousResearch/Hermes-3-Llama-3.1-8B': {
+                        name: 'Hermes',
+                        model: 'NousResearch/Hermes-3-Llama-3.1-8B',
+                        description: 'Hermes 3 is a generalist language model with many improvements over Hermes 2, including advanced agentic capabilities, much better roleplaying, reasoning, multi-turn conversation, long context coherence, and improvements across the board',
                     }
                 }
             },
-            actions: {
-                'math': new Action(
-                    'math',
-                    JSON.stringify({
-                        name: 'math',
-                        description: 'Perform mathematical operations using the javascript evaluation function. Equations must be formatted as they would be in javascript.',
-                        parameters: {
-                            equation: {
-                                type: 'string',
-                                description: 'The equation to evaluate.'
-                            }
-                        },
-                        required: ["equation"]
-                    }),
-                    (params) => {
-                        console.log("Math action: new request for evaluate: " + params.equation)
-                        return {
-                            result: eval(params.equation)
-                        };
-                    }
-                ),
-                'setChatName': new Action(
-                    'setChatName',
-                    JSON.stringify({
-                        name: 'setChatName',
-                        description: 'Set the name of the chat. Ensure that the name summarizes the content of the chat in a few words. When the user sends their initial message, name the chat after you respond.',
-                        parameters: {
-                            name: {
-                                type: 'string',
-                                description: 'The name of the chat.'
-                            }
-                        },
-                        required: ['name']
-                    }),
-                    (params) => {
-                        const previousName = this.chatData.active.name;
-                        this.chatData.active.name = params.name;
-                        this.saveChat();
-                        this.callbacks.chatEdit();
-                        return {
-                            previous: previousName,
-                            result: this.chatData.active.name 
-                        }
-                    }
-                ),
-                'timedate': new Action(
-                    'timedate',
-                    JSON.stringify({
-                        name: 'timedate',
-                        description: 'Get the current time and date. Unless the user specifies that they want both, only show the one they ask for. Only show seconds when requested.',
-                        parameters: {
-                            required: []
-                        }
-                    }),
-                    (params) => {
-                        return {
-                            result: new Date().toLocaleString()
-                        }
-                    }
-                )
+            functions: {
+                timedate: timedate,
+                math: math
             }
         }
 
-
-
-        this.config.actions.getInfo = new Action(
-            'getInfo',
-            JSON.stringify({
-                name: 'getInfo',
-                description: 'Get information about yourself, the chat, and more. If a user requests info about you, such as your model or the model list or what actions you may run, you will use this action to get data about the requested information, and respond based off of the information given to you.',
-                parameters: {
-                    info: {
-                        type: 'string',
-                        description: 'The information you want to get. This can be: model - the model that you are running on, refer to models list for all possible models. chatHistory - list of previous chats and their names. seed - the random UUID value used to randomize your responses. actions - all possible actions you can perform. models - all possible models you can use.',
-                    },
-                    required: ['info']
-                },
-            }),
-            (params) => {
-                switch (params.info) {
-                    case 'model':
-                        return {
-                            result: this.config.models.list[this.config.models.current].name + ' - ' + this.config.models.list[this.config.models.current].description
-                        }
-                    case 'chatHistory':
-                        return {
-                            result: this.chatData.history.map(chat => chat.name)
-                        }
-                    case 'seed':
-                        return {
-                            result: this.config.seed
-                        }
-                    case 'actions':
-                        return {
-                            result: Object.values(this.config.actions).map(action => action.name)
-                        }
-                    case 'models':
-                        return {
-                            result: this.config.models.list
-                        }
-                    default:
-                        return {
-                            result: 'Info type does not exist or no info type was specified.'
-                        }
-                }
-            }
-        )
-        this.config.actions.setModel = new Action(
-            'setModel',
-            JSON.stringify({
-                name: 'setModel',
-                description: 'Set the model of the chat.',
-                parameters: {
-                    model: {
-                        type: 'string',
-                        description: 'The model to set the chat to. Use getInfo to request the models you may switch to before using this.'
-                    },
-                    required: ['model']
-                }
-            }),
-            (params) => {
-                const previousModel = this.config.models.current;
-                this.config.models.current = params.model;
-                return {
-                    previous: previousModel,
-                    result: params.model
-                }
-            }
-        )
-
+        this.chatData.active.basePrompt = systemPrompt(this.config.functions);
         this.chatData.active.initialize();
 
         /* Callbacks can be used to, ex, render chat messages once they've been generated adding a function. 
@@ -240,13 +112,13 @@ export class AIManager {
         this.callbacks = {
             message: null,
             preResponse: null,
+            responseChunkRecived: null,
             postResponse: null,
             chatSave: null,
             chatEdit: null,
             chatLoad: null,
             action: null
         }
-
     }
 
     saveChat() {
@@ -272,8 +144,7 @@ export class AIManager {
     newChat() {
         this.saveChat();
         this.chatData.active = new Chat(null, []);
-        const possibleActions = Object.values(this.config.actions).map(action => action.format).join('\n');
-        this.chatData.active.basePrompt = this.config.prompts.base + this.config.prompts.actions + ' The following will contain raw JSON information which shall be used by you to format action requests and read reponses. requestFormat lists data needed to be added to your ' + possibleActions;
+        this.chatData.active.basePrompt = systemPrompt(this.config.functions);
         this.chatData.active.initialize();
 
         if (this.callbacks.chatLoad) this.callbacks.chatLoad();
@@ -297,53 +168,62 @@ export class AIManager {
     async getAIResponse() {
         if (this.callbacks.preResponse) this.callbacks.preResponse()
 
-        const response = await fetch(this.API.text, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            // You may be wondering; Where's the API key? Well, you dont need one for pollinations.
-            // TODO: make this work with an API key if you want officai chatGPT servers or some other official OpenAI-compliant server
-            body: JSON.stringify({
-                messages: this.chatData.active.messages,
-                seed: this.config.seed,
-                model: this.config.models.current,
-                jsonMode: false
-            })
-        });
+        // Get Data
+        let out
 
-        const data = await response.json();
-        console.log(data)
-        const message = JSON.parse(data.choices[0].message.content);
-
-        if (message.content) this.sendMessage('assistant', message.content);
-        if (message.actions) {
-            if (message.actions.length > 0) {
-                if (this.callbacks.action) this.callbacks.action();
-                message.actions.forEach(action => {
-                    if (this.config.actions[action.name]) {
-                        if (this.callbacks.action) this.callbacks.action(action.name, action.parameters);
-                        const result = this.config.actions[action.name].runAction(action.parameters);
-                        this.sendMessage('system', JSON.stringify({
-                            name: action.name,
-                            messageType: "ActionResponse",
-                            result: result
-                        }));
-                    }
+        switch (this.API.type) {
+            case 'openai':
+                const data = await fetch('')
+                
+                break;
+            case 'huggingface':
+                const inf = new HfInference(this.API.key)
+                const data = await inf.chatCompletion({
+                    model: this.config.models.current,
+                    messages: this.chatData.active.messages,
+                    temperature: this.config.temperature,
+                    max_tokens: this.config.maxTokens,
+                    stream: false,
                 });
+
+                out = data.choices[0].message?.content;
+                break;
+        }
+
+
+        const out = data.choices[0].message?.content;
+        console.log(out)
+        let message
+
+    
+        try {
+            message = JSON.parse(out);
+        } catch (error) {
+            if (out.startsWith('```json') && out.endsWith('```')) {
+                try {
+                    const trimmedMessage = out.split('\n').slice(1, -1).join('\n');
+                    const parsedMessage = JSON.parse(trimmedMessage);
+                    message = parsedMessage;
+                } catch (jsonError) {
+                    message = { content: out };
+                }
+            } else {
+                message = { content: out };
             }
         }
 
-        if (message.tags) {
-            message.tags.forEach(tag => {
-                switch (tag) {
-                    case 'sendNextMessage':
-                        this.getAIResponse();
-                        break;
-                    default:
-                        break;
-                }
-            });
+        if (message.content) this.sendMessage('assistant', message.content);
+
+        if (message.functions) {
+            if (message.functions.length > 0) {
+                message.functions.forEach(functionCall, index => {
+                    if (this.config.functions[functionCall.name]) {
+                        const result = this.config.functions[functionCall.name].run(functionCall.parameters);
+                        this.sendMessage('user', "(SYSTEM MSG) Function call at index " + index + " of function calls arrayreturned: " + JSON.stringify(result));
+                    }
+                });
+                this.getAIResponse();
+            }
         }
 
         if (this.callbacks.postResponse) this.callbacks.postResponse();

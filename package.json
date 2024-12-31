@@ -11,6 +11,8 @@
   "author": "spacedouut",
   "license": "MIT",
   "dependencies": {
+    "@huggingface/inference": "^2.8.1",
+    "date-fns": "^4.1.0",
     "marked": "^15.0.4",
     "moment": "^2.30.1"
   },

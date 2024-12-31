@@ -2,12 +2,13 @@
 
 import { AIManager } from './manager.js';
 
-import { Marked } from 'marked';
+import { marked, Marked } from 'marked';
 import moment from 'moment';
 
-const api = 
+const api = import.meta.env.VITE_HUGGINGFACE_API;
 
-const ai = new AIManager('https://text.pollinations.ai/openai');
+console.log(api)
+const ai = new AIManager(api);
 
 ai.newChat();
 
@@ -34,7 +35,8 @@ function updateMessagesList() {
     ai.chatData.active.messages.forEach(message => {
         if (message.role !== 'system') {
             const messageElement = document.createElement('div');
-            messageElement.textContent = message.content;
+            const renderedContent = marked.parse(message.content);
+            messageElement.innerHTML = renderedContent;
             messageElement.classList.add(message.role === 'user' ? 'user' : 'ai');
             messageElement.classList.add('message');
             messagesList.appendChild(messageElement);
