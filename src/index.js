@@ -9,7 +9,7 @@ const models = hf_models
 
 const ai = new AIManager('huggingface', key, 'https://api-inference.huggingface.co/', models);
 ai.config.systemPrompt = systemPrompt([timedate, math]);
-
+ai.config.models.current = 'mistralai/Mistral-Nemo-Instruct-2407';
 
 ai.newChat();
 

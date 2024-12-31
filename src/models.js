@@ -1,9 +1,4 @@
 export const hf_models = {
-    'meta-llama/Llama-3.1-70B-Instruct': {
-        name: 'Llama 3.1 Instruct',
-        model: 'meta-llama/Llama-3.3-70B-Instruct',
-        description: 'The Meta Llama 3.3 multilingual large language model (LLM) is an instruction tuned generative model in 70B (text in/text out).'
-    },
     'google/gemma-2-9b-it': {
         name: 'Gemma 2',
         model: 'google/gemma-2-9b-it',

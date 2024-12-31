@@ -11,7 +11,7 @@ export const systemPrompt = (function_calls) => {
 		});
 	}
 
-	console.log(functions)
+	//console.log(functions)
 
     return `You are Cypher, a conversational AI assistant powered by multiple advanced language models.
 

@@ -1,3 +1,5 @@
+import { HfInference } from '@huggingface/inference';
+
 class Chat {
     constructor(id, messages) {
         this.id = id;
@@ -113,6 +115,7 @@ export class AIManager {
     }
 
     async getAIResponse() {
+        console.log("=== Starting Text Generation ===")
         if (this.callbacks.preResponse) this.callbacks.preResponse()
 
         // Get Data
@@ -121,6 +124,10 @@ export class AIManager {
         switch (this.API.type) {
             case 'openai':
                 url = this.API.url
+                console.log("API Type: OpenAI or OpenAI Compatable")
+                console.log(`URL: ${url}`)
+                console.log(`Model: ${this.config.models.current}`)
+
                 responseData = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -136,20 +143,28 @@ export class AIManager {
                 out = responseData.choices[0].message?.content;
                 break;
             case 'huggingface':
+                console.log("API Type: Hugging Face")
+                console.log(`URL: ${url}`)
+                console.log(`Model: ${this.config.models.current}`)
+                
                 const { inference } = await import('@huggingface/inference');
-                const hfInference = new inference.HFInference(this.API.key);
-                const result = hfInference.chatCompletion({
+                const hfInference = new HfInference(this.API.key);
+                const result = await hfInference.chatCompletion({
                     temperature: this.config.temperature,
                     max_length: this.config.maxTokens,
                     model: this.config.models.current,
                     messages: this.chatData.active.messages,
+                    max_tokens: 16384,
+                    max_length: 16384,
+                    stream: false
                 });
-                out = result.choices[0].message?.content;
+                out = result.choices[0]?.message?.content;
+
+                console.log("=== Finished Text Generation ===")
+                console.log(`Generated text of length ${out.length}: \n ${out}`)
                 break;
         }
 
-
-        console.log(out)
         let message
 
 
