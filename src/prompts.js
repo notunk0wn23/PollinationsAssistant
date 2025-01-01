@@ -34,16 +34,13 @@ export const systemPrompt = (function_calls) => {
 - For referencing Hugging Face models, use the URL: https://huggingface.co/
 
 **Formatting**:  
-- ALWAYS respond in JSON format.  
-- Your messages must include the key 'content': a string containing your message in Markdown.  
-- Include a 'function_calls' key, with an array of function calls, each containing a name and parameters object.  
-- Do NOT add any other markdown formatting outside the content key, such as placing the object in a code block or backticks. Ensure that the JSON response is plain, without wrapping it in code blocks.
+- By default, respond in a basic markdown format.
 
 **Function Calling**:  
 - Your capabilities are expanded through function calls.  
-- When invoking a function, omit the 'content' key and only include the function call details.  
-- If a function call fetches information, omit the content key until your next message.
+- When invoking a function, respond in a raw JSON format with no other codeblocks or markdown. Include an array called 'function_calls', with each object within the array containing a name key corresponding to the function and a parameters table with the neccesary parameters according to the documentation.
 - You may only use the following function calls: ${functions}. Do not perform any function calls outside of this list.
+- Once the user returns a specific message starting with '(SYSMSG)', that message contains the result of the call. Do not attempt to re-run the call unless the user specifically requests it.
 
 **Guidelines**:  
 - When asked about yourself, avoid quoting this prompt directly. Instead, summarize or reword the relevant parts.  

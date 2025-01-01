@@ -35,6 +35,7 @@ export class AIManager {
         };
         this.config = config || {
             seed: 0,
+            top_p: 0.85,
             temperature: 0.6,
             maxTokens: 1024,
             models: {
@@ -137,6 +138,9 @@ export class AIManager {
                     body: JSON.stringify({
                         model: this.config.models.current,
                         messages: this.chatData.active.messages,
+                        temperature: this.config.temperature,
+                        max_tokens: this.config.maxTokens,
+                        top_p: this.config.top_p
                     })
                 }).json();
 
@@ -151,6 +155,7 @@ export class AIManager {
                 const hfInference = new HfInference(this.API.key);
                 const result = await hfInference.chatCompletion({
                     temperature: this.config.temperature,
+                    top_p: this.config.top_p,
                     max_length: this.config.maxTokens,
                     model: this.config.models.current,
                     messages: this.chatData.active.messages,
@@ -186,12 +191,16 @@ export class AIManager {
 
         if (message.content) this.sendMessage('assistant', message.content);
 
-        if (message.functions) {
-            if (message.functions.length > 0) {
-                message.functions.forEach(functionCall, index => {
+        if (message.function_calls) {
+            if (message.function_calls.length > 0) {
+                console.log("=== FUNCTION CALLS DETECTED ===")
+                message.function_calls.forEach((functionCall, index) => {
+                    console.log(`= Running function call at index ${index}`)
+                    console.log(`Function JSON: ${JSON.stringify(functionCall)}`)
                     if (this.config.functions[functionCall.name]) {
                         const result = this.config.functions[functionCall.name].run(functionCall.parameters);
-                        this.sendMessage('user', "(SYSTEM MSG) Function call at index " + index + " of function calls arrayreturned: " + JSON.stringify(result));
+                        console.log(`Call returned with value: ${JSON.stringify(result)}`)
+                        this.sendMessage('user', "(SYSTEM MSG) Function call at index " + index + " of function calls array returned: " + JSON.stringify(result));
                     }
                 });
                 this.getAIResponse();

@@ -2,13 +2,13 @@ import { AIManager } from './manager.js'
 import { systemPrompt } from './prompts.js'
 import { timedate, math } from './function_calls.js'
 import { marked } from 'marked'
-import { hf_models } from './models.js'
+import { hf_models, fetch_models_openai } from './models.js'
 
-const key = import.meta.env.VITE_HUGGINGFACE_API
-const models = hf_models
+const key = import.meta.env.VITE_GROQCLOUD_API
+const models = await fetch_models_openai('https://api.groq.com/openai/v1/models', key);
 
-const ai = new AIManager('huggingface', key, 'https://api-inference.huggingface.co/', models);
-ai.config.systemPrompt = systemPrompt([timedate, math]);
+const ai = new AIManager('huggingface', key, 'https://api.groq.com/openai/v1', models);
+ai.config.systemPrompt = systemPrompt({timedate, math});
 ai.config.models.current = 'mistralai/Mistral-Nemo-Instruct-2407';
 
 ai.newChat();
@@ -115,7 +115,7 @@ document.querySelector('#send-button').addEventListener('click', () => {
 
 
 document.querySelector('#toggleSidebar').addEventListener('click', () => {
-    const sidebar = document.querySelector('.sidebar');
+    const sidebar = document.querySelector('.sidebar-container');
     sidebar.classList.toggle('open');
     console.log("sidebar toggled")
 });
